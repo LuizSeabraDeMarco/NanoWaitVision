@@ -1,3 +1,23 @@
+Metadata-Version: 2.4
+Name: nano-wait-vision
+Version: 0.1.0
+Summary: Vision extension for nano-wait automation
+Author: Luiz Seabra De Marco
+License: MIT
+Project-URL: Repository, https://github.com/LuizSeabraDeMarco/NanoWaitVision
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: nano-wait
+Requires-Dist: opencv-python
+Requires-Dist: pytesseract
+Requires-Dist: pyautogui
+Requires-Dist: numpy
+Dynamic: license-file
+
 # 👁️ Nano-Wait-Vision — Visual Execution Extension
 
 [![PyPI Version](https://img.shields.io/pypi/v/nano-wait-vision.svg)](https://pypi.org/project/nano-wait-vision/)
