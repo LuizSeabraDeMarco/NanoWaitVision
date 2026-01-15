@@ -3,7 +3,9 @@ README.md
 pyproject.toml
 nano_wait_vision/__init__.py
 nano_wait_vision/ocr.py
+nano_wait_vision/pytest_fixture.py
 nano_wait_vision/screen.py
+nano_wait_vision/selenium_adapter.py
 nano_wait_vision/vision.py
 nano_wait_vision/vision_state.py
 nano_wait_vision.egg-info/PKG-INFO

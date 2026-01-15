@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nano-wait-vision"
-version = "0.1.0"
+version = "0.3.0"
 description = "Vision extension for nano-wait automation"
 readme = "README.md"
 license = { text = "MIT" }
@@ -25,3 +25,6 @@ classifiers = [
 
 [project.urls]
 Repository = "https://github.com/LuizSeabraDeMarco/NanoWaitVision"
+
+[tool.setuptools]
+packages = { find = { where = ["."], include = ["nano_wait_vision*"], exclude = ["tests*"] } }

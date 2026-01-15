@@ -1,56 +1,45 @@
-# 👁️ Nano-Wait-Vision — Visual Execution Extension
+# Nano-Wait-Vision — Visual Execution Extension
 
-[![PyPI Version](https://img.shields.io/pypi/v/nano-wait-vision.svg)](https://pypi.org/project/nano-wait-vision/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://img.shields.io/pypi/v/nano-wait-vision.svg)](https://pypi.org/project/nano-wait-vision/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**nano-wait-vision** is the official computer vision extension for **nano-wait**. It integrates visual awareness capabilities (such as OCR, icon detection, and screen states) into the adaptive waiting engine, enabling more robust and deterministic automations.
+**nano-wait-vision** is the official computer vision extension for [nano-wait](https://pypi.org/project/nano-wait/). It integrates visual awareness (OCR, icon detection, screen states) into the adaptive waiting engine, enabling deterministic, screen-driven automations.
 
-> 📦 **Critical Dependency:** This package **DEPENDS on `nano-wait`**. It does not replace `nano-wait`, but rather extends it.
-
----
-
-## 🧭 Table of Contents
-
-1.  [What is Nano-Wait-Vision?](#-what-is-nano-wait-vision)
-2.  [Added Features](#-added-features)
-3.  [Quick Start](#-quick-start)
-    *   [Installation](#installation)
-    *   [Usage Examples](#usage-examples)
-4.  [Installation & Dependencies (READ THIS)](#-installation--dependencies-read-this)
-    *   [Python Dependencies](#python-dependencies-via-pip)
-    *   [Mandatory External Dependency (OCR)](#mandatory-external-dependency-ocr)
-5.  [Mental Model and Operation](#-mental-model--how-nano-wait-vision-works)
-6.  [VisionState — Visual Operation Return](#visionstate--visual-operation-return)
-7.  [Ideal Use Cases](#-ideal-use-cases)
-8.  [Design Philosophy](#-design-philosophy)
-9.  [Relationship with `nano-wait`](#relationship-with-nano-wait)
+> [!IMPORTANT]
+> **Critical Dependency:** This package **DEPENDS** on `nano-wait`. It does not replace `nano-wait` — it extends it.
 
 ---
 
 ## 🧠 What is Nano-Wait-Vision?
 
-Nano-Wait-Vision is a **deterministic vision engine** designed for Python automation. Its main function is to allow scripts to **wait for real visual conditions** on the screen, instead of relying solely on time-based waits.
+Nano-Wait-Vision is a deterministic vision engine for Python automation. Instead of waiting blindly with `sleep()`, it allows your code to wait for real visual conditions:
 
-It was developed to operate **in conjunction** with `nano-wait`, establishing a clear division of responsibilities:
+*   **Text** appearing on screen
+*   **Icons** becoming visible
+*   **UI states** changing
 
-| Component | Function |
+It is designed to work in strict cooperation with `nano-wait`:
+
+| Component | Responsibility |
 | :--- | :--- |
-| ⏱️ `nano-wait` | **When to check** (Manages the pace and adaptive waiting) |
-| 👁️ `nano-wait-vision` | **What to check** (Provides visual awareness) |
+| ⏱️ **nano-wait** | When to check (adaptive pacing & CPU-aware waiting) |
+| 👁️ **nano-wait-vision** | What to check (screen, OCR, icons) |
 
 ---
 
-## 🧩 Added Features
+## 🧩 Key Features
 
-`nano-wait-vision` extends the `nano-wait` waiting engine with the following visual capabilities:
+nano-wait-vision extends nano-wait with:
 
-*   **👁️ OCR (Optical Character Recognition):** Reading text directly from the screen.
-*   **🖼️ Icon Detection:** Locating visual elements (template matching) with high precision.
-*   **🧠 Explicit Visual States:** Defining and waiting for specific graphical interface states.
-*   **📚 Persistent Visual Memory:** Uses efficient computer vision techniques, without the need for heavy Machine Learning models.
-*   **🖥️ Screen-Based Automation:** Ideal for RPA (Robotic Process Automation) tasks and GUI testing.
+*   **👁️ OCR (Optical Character Recognition):** Read real text directly from the screen.
+*   **🖼️ Icon Detection:** Template matching via OpenCV.
+*   **🧠 Explicit Visual States:** Each operation returns a structured `VisionState`.
+*   **📚 Persistent & Explainable Diagnostics:** No black-box ML models.
+*   **🖥️ Screen-Based Automation:** Ideal for RPA and GUI testing.
+*   **⚡ Selenium / Pytest Adapters:** Immediate adoption in corporate or academic QA workflows.
 
-👉 All these features use the **adaptive waiting engine** of `nano-wait` as their foundation.
+> [!TIP]
+> All waiting logic is delegated to `nano-wait.wait()` — never `time.sleep()`.
 
 ---
 
@@ -58,16 +47,12 @@ It was developed to operate **in conjunction** with `nano-wait`, establishing a 
 
 ### Installation
 
-First, install the main package (`nano-wait`), and then the vision extension:
-
 ```bash
 pip install nano-wait
 pip install nano-wait-vision
 ```
 
-### Usage Examples
-
-#### Simple Visual Observation
+### Simple Visual Observation
 
 ```python
 from nano_wait_vision import VisionMode
@@ -75,133 +60,176 @@ from nano_wait_vision import VisionMode
 vision = VisionMode()
 state = vision.observe()
 
-print(state.detected, state.text)
+print(f"Detected: {state.detected}")
+print(f"Text: {state.text}")
 ```
 
-#### Wait for Text to Appear on Screen
+### Wait for Text to Appear
 
 ```python
 from nano_wait_vision import VisionMode
 
-vision = VisionMode()
+vision = VisionMode(verbose=True)
+
+# Wait up to 10 seconds for the word "Welcome"
 state = vision.wait_text("Welcome", timeout=10)
 
 if state.detected:
-    print("Text 'Welcome' detected on screen.")
+    print("Text detected!")
 ```
 
-#### Wait for Icon to Appear
+### Wait for an Icon
 
 ```python
 from nano_wait_vision import VisionMode
 
 vision = VisionMode()
-# Assumes 'ok.png' is an image file of the icon to be searched
+
+# Wait up to 10 seconds for an icon image
 state = vision.wait_icon("ok.png", timeout=10)
 
 if state.detected:
-    print("Icon 'ok.png' detected on screen.")
+    print("Icon found on screen.")
 ```
 
 ---
 
-## ⚠️ Installation & Dependencies (READ THIS)
+## ⚠️ Installation & Dependencies
 
-Nano-Wait-Vision is not a lightweight library, as it depends on graphical automation and OCR at the operating system level.
+This library interacts directly with your operating system screen and OCR engine.
 
-### Python Dependencies (via pip)
-
-The following dependencies are automatically installed:
-
+### Python Dependencies (auto-installed)
 *   `opencv-python`
 *   `pytesseract`
 *   `pyautogui`
 *   `numpy`
 
-### 🧠 Mandatory External Dependency (OCR)
+### 🧠 Mandatory External Dependency — Tesseract OCR
 
-👉 **Tesseract OCR** must be installed and accessible in the operating system's PATH for the OCR functionality to work.
+OCR will not work unless **Tesseract** is installed and available in your PATH.
 
-| Operating System | Installation Command |
+| OS | Command / Action |
 | :--- | :--- |
 | **macOS** | `brew install tesseract` |
 | **Ubuntu / Debian** | `sudo apt install tesseract-ocr` |
-| **Windows** | Download from the [official Tesseract website](https://github.com/tesseract-ocr/tesseract) and add to PATH. |
+| **Windows** | Download from the official Tesseract repo and add to PATH |
 
-⚠️ **Warning:** Without Tesseract installed, any OCR functionality will fail immediately.
+> [!WARNING]
+> If Tesseract is missing, OCR calls will silently fail or return empty text.
 
 ---
 
-## 🧠 Mental Model — How `nano-wait-vision` Works
+## 🧠 Mental Model — How It Works
 
-`nano-wait-vision` does not execute in isolation. It operates within the conceptual cycle of `nano-wait`:
+Nano-Wait-Vision follows this loop: **observe → evaluate → wait → observe**.
 
-`observe` → `reason` → `wait` → `observe`
+Two engines cooperate:
 
-It integrates two cooperative engines:
-
-| 👁️ Vision Engine (What is happening?) | ⏱️ `nano-wait` (When to check?) |
+| 👁️ Vision Engine | ⏱️ nano-wait |
 | :--- | :--- |
-| OCR (text) | CPU |
-| Icons (template matching) | Memory |
-| Explicit visual states | Smart Mode |
-| | Adaptive pace |
+| OCR / Icons | Adaptive timing |
+| Screen capture | CPU-aware waits |
+| Visual states | Smart pacing |
 
-👉 The vision engine **never** executes `time.sleep()` directly. It always delegates the pace and waiting to `nano-wait`.
+Vision never sleeps. All delays are handled by `nano-wait`.
 
 ---
 
-## VisionState — Visual Operation Return
+## 📦 VisionState — Return Object
 
-All visual operations return a `VisionState` object with the observation information:
+Every visual operation returns a `VisionState` object:
 
 ```python
 VisionState(
     name: str,
     detected: bool,
     confidence: float,
+    attempts: int,
+    elapsed: float,
     text: Optional[str],
-    icon: Optional[str]
+    icon: Optional[str],
+    diagnostics: dict
 )
 ```
 
-👉 **Always validate** the `detected` field in critical automations to ensure the visual condition has been met.
+*Always check `detected` before acting on the result.*
+
+---
+
+## 🧪 Diagnostics & Debugging
+
+Nano-Wait-Vision supports verbose diagnostics:
+
+```python
+vision = VisionMode(verbose=True)
+state = vision.wait_text("Terminal")
+```
+
+Diagnostics include:
+*   Attempts per phase
+*   Confidence scores
+*   Elapsed time
+*   Reason for failure
+
+A full macOS diagnostic test is provided in `test_screen.py`, generating debug screenshots for inspection.
+
+---
+
+## 🖥️ Platform Notes
+
+### macOS (Important)
+*   Screen capture requires **Screen Recording permission**.
+*   OCR requires RGB images (internally handled by Nano-Wait-Vision).
+*   Fully tested on macOS Retina displays.
+
+### Windows & Linux
+*   Works out of the box.
+*   Ensure correct DPI scaling on Windows for accurate coordinate mapping.
 
 ---
 
 ## 🧪 Ideal Use Cases
 
-Use `nano-wait-vision` if your project involves:
-
-*   **RPA (Robotic Process Automation)**
-*   **GUI (Graphical User Interface) Automation**
-*   **Visual Testing** (ensuring elements appear correctly)
-*   **OCR-Driven Workflows**
-*   **Systems without an API** (where the only interface is the screen)
-*   **Screen-Based Alternatives to Selenium**
-
-If you only need smart waiting based on time and system resources, use `nano-wait` alone.
+Use Nano-Wait-Vision when dealing with:
+*   **RPA** (Robotic Process Automation)
+*   **GUI automation** and testing
+*   **OCR-driven** workflows
+*   **Visual regression** tests
+*   Applications **without APIs**
+*   Screen-based alternatives to Selenium
 
 ---
 
 ## 🧩 Design Philosophy
 
-The project adheres to the following principles:
-
-*   **Deterministic:** Predictable and consistent results.
-*   **No Opaque ML:** Avoids complex and hard-to-debug Machine Learning models.
-*   **Reproducible:** Automations must be repeatable across different environments.
-*   **Explainable:** The vision state must be easy to understand and track.
-*   **Based on Real Screen State:** Operates directly on what the user sees.
-*   **Integrated into System Context:** Works in harmony with the adaptive waiting engine.
+*   **Deterministic:** Predictable behavior based on visual truth.
+*   **Explainable:** Clear diagnostics for every action.
+*   **No opaque ML:** Uses reliable computer vision techniques.
+*   **System-aware:** Respects system resources via `nano-wait`.
+*   **Debuggable by design:** Built-in tools for troubleshooting.
 
 ---
 
-## 📌 Relationship with `nano-wait`
+## 🧪 Selenium / Pytest Integration
 
-| Project | Description |
-| :--- | :--- |
-| `nano-wait` | Main product, adaptive waiting engine. |
-| `nano-wait-vision` | Official vision extension, adds visual capabilities. |
+### Selenium-style Visual Waits
+```python
+from nano_wait_vision.selenium import VisionWait
 
-Both are published separately on PyPI but are designed to work as a unified system.
+wait = VisionWait(timeout=15)
+wait.until_text("Dashboard")
+wait.until_icon("ok.png")
+```
+
+### Pytest Fixture
+```python
+def test_homepage(vision):
+    assert vision.wait_text("Welcome")
+```
+*Pytest fixture is available via `nano_wait_vision.pytest_fixture.vision`*
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
