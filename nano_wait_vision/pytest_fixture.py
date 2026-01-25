@@ -1,14 +1,13 @@
 import pytest
 from .vision import VisionMode
-
+from .selenium_adapter import VisionWait
 
 @pytest.fixture
 def vision():
-    """
-    Pytest fixture for vision-based GUI waits.
-
-    Usage:
-        def test_app(vision):
-            assert vision.wait_text("Welcome")
-    """
+    """Instância VisionMode para testes de GUI."""
     return VisionMode()
+
+@pytest.fixture
+def wait():
+    """Instância VisionWait plug-and-play (Selenium-free)."""
+    return VisionWait(timeout=10)

@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nano-wait-vision"
-version = "0.3.0"
+version = "0.3.2 pip install --upgrade build
+"
 description = "Vision extension for nano-wait automation"
 readme = "README.md"
 license = { text = "MIT" }

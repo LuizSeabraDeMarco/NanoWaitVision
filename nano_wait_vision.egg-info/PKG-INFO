@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: nano-wait-vision
-Version: 0.3.0
+Version: 0.3.2
 Summary: Vision extension for nano-wait automation
 Author: Luiz Seabra De Marco
 License: MIT
@@ -34,16 +34,17 @@ Dynamic: license-file
 
 Nano-Wait-Vision is a deterministic vision engine for Python automation. Instead of waiting blindly with `sleep()`, it allows your code to wait for real visual conditions:
 
-*   **Text** appearing on screen
-*   **Icons** becoming visible
-*   **UI states** changing
+* **Text** appearing on screen
+* **Icons** becoming visible
+* **UI states** changing
+* **Multi-Monitor Support:** now you can target specific screens for observation, text detection, and icon detection. Ideal for setups with multiple monitors.
 
 It is designed to work in strict cooperation with `nano-wait`:
 
-| Component | Responsibility |
-| :--- | :--- |
-| ⏱️ **nano-wait** | When to check (adaptive pacing & CPU-aware waiting) |
-| 👁️ **nano-wait-vision** | What to check (screen, OCR, icons) |
+| Component                | Responsibility                                      |
+| :----------------------- | :-------------------------------------------------- |
+| ⏱️ **nano-wait**         | When to check (adaptive pacing & CPU-aware waiting) |
+| 👁️ **nano-wait-vision** | What to check (screen, OCR, icons)                  |
 
 ---
 
@@ -51,12 +52,14 @@ It is designed to work in strict cooperation with `nano-wait`:
 
 nano-wait-vision extends nano-wait with:
 
-*   **👁️ OCR (Optical Character Recognition):** Read real text directly from the screen.
-*   **🖼️ Icon Detection:** Template matching via OpenCV.
-*   **🧠 Explicit Visual States:** Each operation returns a structured `VisionState`.
-*   **📚 Persistent & Explainable Diagnostics:** No black-box ML models.
-*   **🖥️ Screen-Based Automation:** Ideal for RPA and GUI testing.
-*   **⚡ Selenium / Pytest Adapters:** Immediate adoption in corporate or academic QA workflows.
+* **👁️ OCR (Optical Character Recognition):** Read real text directly from the screen.
+* **🖼️ Icon Detection:** Template matching via OpenCV.
+* **🖥️ Automatic HiDPI/Retina Support:** Icons and template matching are automatically scaled to work flawlessly on 4K, macOS Retina, and Windows HiDPI displays, requiring zero user configuration.
+* **🖥️ Multi-Monitor Awareness:** Target any monitor by index; works seamlessly in multi-screen setups.
+* **🧠 Explicit Visual States:** Each operation returns a structured `VisionState`.
+* **📚 Persistent & Explainable Diagnostics:** No black-box ML models.
+* **⚡ QA-Friendly & Plug-and-Play:** Zero dependency on web drivers (like Selenium), making corporate and academic adoption seamless.
+* **🖥️ Screen-Based Automation:** Ideal for RPA and GUI testing.
 
 > [!TIP]
 > All waiting logic is delegated to `nano-wait.wait()` — never `time.sleep()`.
@@ -72,16 +75,21 @@ pip install nano-wait
 pip install nano-wait-vision
 ```
 
-### Simple Visual Observation
+### Simple Visual Observation (Single or Multi-Monitor)
 
 ```python
 from nano_wait_vision import VisionMode
 
-vision = VisionMode()
-state = vision.observe()
+# Observe the primary screen
+vision_main = VisionMode(screen_index=0)
+state_main = vision_main.observe()
 
-print(f"Detected: {state.detected}")
-print(f"Text: {state.text}")
+# Observe a secondary screen (if available)
+vision_second = VisionMode(screen_index=1)
+state_second = vision_second.observe()
+
+print(f"Primary screen text: {state_main.text}")
+print(f"Secondary screen text: {state_second.text}")
 ```
 
 ### Wait for Text to Appear
@@ -89,9 +97,9 @@ print(f"Text: {state.text}")
 ```python
 from nano_wait_vision import VisionMode
 
-vision = VisionMode(verbose=True)
+vision = VisionMode(verbose=True, screen_index=0)
 
-# Wait up to 10 seconds for the word "Welcome"
+# Wait up to 10 seconds for the word "Welcome" on the primary screen
 state = vision.wait_text("Welcome", timeout=10)
 
 if state.detected:
@@ -103,9 +111,9 @@ if state.detected:
 ```python
 from nano_wait_vision import VisionMode
 
-vision = VisionMode()
+vision = VisionMode(screen_index=1)  # target second monitor
 
-# Wait up to 10 seconds for an icon image
+# Wait up to 10 seconds for an icon image on the second monitor
 state = vision.wait_icon("ok.png", timeout=10)
 
 if state.detected:
@@ -119,20 +127,22 @@ if state.detected:
 This library interacts directly with your operating system screen and OCR engine.
 
 ### Python Dependencies (auto-installed)
-*   `opencv-python`
-*   `pytesseract`
-*   `pyautogui`
-*   `numpy`
+
+* `opencv-python`
+* `pytesseract`
+* `pyautogui`
+* `numpy`
+* **Optional for Multi-Monitor:** `mss` (faster and full multi-monitor support)
 
 ### 🧠 Mandatory External Dependency — Tesseract OCR
 
 OCR will not work unless **Tesseract** is installed and available in your PATH.
 
-| OS | Command / Action |
-| :--- | :--- |
-| **macOS** | `brew install tesseract` |
-| **Ubuntu / Debian** | `sudo apt install tesseract-ocr` |
-| **Windows** | Download from the official Tesseract repo and add to PATH |
+| OS                  | Command / Action                                          |
+| :------------------ | :-------------------------------------------------------- |
+| **macOS**           | `brew install tesseract`                                  |
+| **Ubuntu / Debian** | `sudo apt install tesseract-ocr`                          |
+| **Windows**         | Download from the official Tesseract repo and add to PATH |
 
 > [!WARNING]
 > If Tesseract is missing, OCR calls will silently fail or return empty text.
@@ -145,11 +155,11 @@ Nano-Wait-Vision follows this loop: **observe → evaluate → wait → observe*
 
 Two engines cooperate:
 
-| 👁️ Vision Engine | ⏱️ nano-wait |
-| :--- | :--- |
-| OCR / Icons | Adaptive timing |
-| Screen capture | CPU-aware waits |
-| Visual states | Smart pacing |
+| 👁️ Vision Engine                    | ⏱️ nano-wait    |
+| :----------------------------------- | :-------------- |
+| OCR / Icons                          | Adaptive timing |
+| Screen capture (multi-monitor aware) | CPU-aware waits |
+| Visual states                        | Smart pacing    |
 
 Vision never sleeps. All delays are handled by `nano-wait`.
 
@@ -181,75 +191,105 @@ VisionState(
 Nano-Wait-Vision supports verbose diagnostics:
 
 ```python
-vision = VisionMode(verbose=True)
+vision = VisionMode(verbose=True, screen_index=0)
 state = vision.wait_text("Terminal")
 ```
 
 Diagnostics include:
-*   Attempts per phase
-*   Confidence scores
-*   Elapsed time
-*   Reason for failure
 
-A full macOS diagnostic test is provided in `test_screen.py`, generating debug screenshots for inspection.
+* Attempts per phase
+* Confidence scores
+* Elapsed time
+* Reason for failure
 
 ---
 
 ## 🖥️ Platform Notes
 
+### Automatic HiDPI/Retina Support (New!)
+
+The library now automatically detects the screen's scaling factor (DPI/Retina) and scales icon templates accordingly. This ensures template matching works reliably on all modern displays (macOS Retina, Windows HiDPI, 4K monitors) without any manual configuration.
+
+### Multi-Monitor Support (New!)
+
+* Target a specific monitor using the `screen_index` parameter.
+* Supports setups with multiple monitors; automatically handles capturing and scaling per screen.
+* Optional dependency: `mss` for faster and full multi-monitor screenshots.
+
 ### macOS (Important)
-*   Screen capture requires **Screen Recording permission**.
-*   OCR requires RGB images (internally handled by Nano-Wait-Vision).
-*   Fully tested on macOS Retina displays.
+
+* Screen capture requires **Screen Recording permission**.
+* OCR requires RGB images (internally handled by Nano-Wait-Vision).
+* Fully tested on macOS Retina displays with automatic scaling.
 
 ### Windows & Linux
-*   Works out of the box.
-*   Ensure correct DPI scaling on Windows for accurate coordinate mapping.
+
+* Works out of the box.
 
 ---
 
 ## 🧪 Ideal Use Cases
 
 Use Nano-Wait-Vision when dealing with:
-*   **RPA** (Robotic Process Automation)
-*   **GUI automation** and testing
-*   **OCR-driven** workflows
-*   **Visual regression** tests
-*   Applications **without APIs**
-*   Screen-based alternatives to Selenium
+
+* **RPA** (Robotic Process Automation)
+* **GUI automation** and testing
+* **OCR-driven** workflows
+* **Visual regression** tests
+* Applications **without APIs**
+* Screen-based alternatives to traditional web drivers.
 
 ---
 
 ## 🧩 Design Philosophy
 
-*   **Deterministic:** Predictable behavior based on visual truth.
-*   **Explainable:** Clear diagnostics for every action.
-*   **No opaque ML:** Uses reliable computer vision techniques.
-*   **System-aware:** Respects system resources via `nano-wait`.
-*   **Debuggable by design:** Built-in tools for troubleshooting.
+* **Deterministic:** Predictable behavior based on visual truth.
+* **Explainable:** Clear diagnostics for every action.
+* **No opaque ML:** Uses reliable computer vision techniques.
+* **System-aware:** Respects system resources via `nano-wait`.
+* **Debuggable by design:** Built-in tools for troubleshooting.
 
 ---
 
-## 🧪 Selenium / Pytest Integration
+## 🧪 QA & Automation Adapters (Pytest & Generic Wait)
 
-### Selenium-style Visual Waits
+The library is now completely **driver-agnostic** and provides dedicated tools for QA and automation workflows.
+
+### Generic Visual Waits (`VisionWait`)
+
+The `VisionWait` class provides a "Selenium-like" adapter for visual waiting, but is now completely independent of Selenium or any web driver. It's a clean, plug-and-play way to integrate visual checks into any automation framework.
+
 ```python
-from nano_wait_vision.selenium import VisionWait
+from nano_wait_vision import VisionWait
 
-wait = VisionWait(timeout=15)
+wait = VisionWait(timeout=15) 
 wait.until_text("Dashboard")
 wait.until_icon("ok.png")
 ```
 
-### Pytest Fixture
+### Pytest Fixtures (Plug-and-Play)
+
+For immediate adoption in QA projects, the library provides ready-to-use pytest fixtures.
+
 ```python
-def test_homepage(vision):
-    assert vision.wait_text("Welcome")
+def test_homepage(vision, wait):
+    # Use the global VisionMode instance
+    assert vision.wait_text("Welcome") 
+    
+    # Use the VisionWait adapter
+    wait.until_icon("login_button.png")
 ```
-*Pytest fixture is available via `nano_wait_vision.pytest_fixture.vision`*
+
+*Fixtures are available via `nano_wait_vision.pytest_fixture`.*
 
 ---
 
 ## 📄 License
 
 This project is licensed under the MIT License.
+
+---
+
+Se você quiser, posso gerar também **uma seção visual de diagrama mostrando multi-monitor workflow** para o README, que deixa claro como o `screen_index` funciona em setups com 2 ou mais telas.
+
+Quer que eu faça isso?
