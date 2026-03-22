@@ -11,7 +11,7 @@ except ImportError:
 def capture_screen(gray: bool = False, screen_index: int = 0):
     """
     Captura a tela especificada (multi-monitor) e retorna como numpy array.
-    
+
     Parameters:
         gray: retorna imagem em grayscale
         screen_index: índice do monitor (0 = principal)

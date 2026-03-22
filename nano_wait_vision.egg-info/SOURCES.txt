@@ -2,6 +2,8 @@ LICENSE
 README.md
 pyproject.toml
 nano_wait_vision/__init__.py
+nano_wait_vision/__main__.py
+nano_wait_vision/cli.py
 nano_wait_vision/ocr.py
 nano_wait_vision/pytest_fixture.py
 nano_wait_vision/screen.py
@@ -11,6 +13,7 @@ nano_wait_vision/vision_state.py
 nano_wait_vision.egg-info/PKG-INFO
 nano_wait_vision.egg-info/SOURCES.txt
 nano_wait_vision.egg-info/dependency_links.txt
+nano_wait_vision.egg-info/entry_points.txt
 nano_wait_vision.egg-info/requires.txt
 nano_wait_vision.egg-info/top_level.txt
 tests/test_vision_mode.py

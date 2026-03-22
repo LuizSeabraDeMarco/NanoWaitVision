@@ -76,8 +76,8 @@ class VisionMode:
     # ==========================
 
     def observe(self) -> VisionState:
-        frame = capture_screen(screen_index=self.screen_index)
-        text = extract_text(frame).strip()
+        frame = capture_screen(gray=True, screen_index=self.screen_index)  # grayscale
+        text = extract_text(frame, method="adaptive").strip()  # OCR adaptativo
         return VisionState(
             name="observe",
             detected=bool(text),
@@ -100,8 +100,9 @@ class VisionMode:
             while time.time() - start < timeout:
                 if phase_limit and time.time() - phase_start > phase_limit:
                     break
-                frame = capture_screen(screen_index=self.screen_index)
-                detected_text = extract_text(frame)
+
+                frame = capture_screen(gray=True, screen_index=self.screen_index)
+                detected_text = extract_text(frame, method="adaptive")  # OCR adaptativo
                 attempts += 1
                 phase_attempts += 1
                 conf = text_confidence(detected_text, text)

@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nano-wait-vision"
-version = "0.3.2 pip install --upgrade build
-"
+version = "0.4.1"
 description = "Vision extension for nano-wait automation"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Luiz Seabra De Marco" }]
 requires-python = ">=3.9"
+
 dependencies = [
   "nano-wait",
   "opencv-python",
@@ -18,11 +18,17 @@ dependencies = [
   "pyautogui",
   "numpy"
 ]
+
+# ✅ CLASSIFIERS FICAM AQUI
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent"
 ]
+
+# 🔥 CLI (SEPARADO)
+[project.scripts]
+nano-vision = "nano_wait_vision.cli:main"
 
 [project.urls]
 Repository = "https://github.com/LuizSeabraDeMarco/NanoWaitVision"
